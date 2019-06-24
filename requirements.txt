@@ -1,0 +1,1 @@
+-e git+git@github.com:WildbookOrg/utool.git@619d86c54d450cfc9a068567d56d89e6e98c1ad1#egg=utool
