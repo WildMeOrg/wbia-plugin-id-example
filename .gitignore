@@ -1,0 +1,10 @@
+.DS_Store
+
+failed_doctests.txt
+timeings.txt
+profile_output*.txt
+
+*.egg-info
+__pycache__
+_doc/_build
+_page/

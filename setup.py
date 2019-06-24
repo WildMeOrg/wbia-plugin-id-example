@@ -25,13 +25,13 @@ Programming Language :: Python :: 3.3
 Programming Language :: Python :: 3.4
 Topic :: Scientific/Engineering :: Bio-Informatics
 '''
-NAME                = 'IBEIS Plugin Example'
+NAME                = 'IBEIS Identification Plugin Example'
 MAINTAINER          = 'Wildbook Org. | IBEIS IA'
 MAINTAINER_EMAIL    = 'info@wildme.org'
 DESCRIPTION         = 'An example of how to design and use a Python module ' + \
                       'as a plugin in the IBEIS IA system'
 LONG_DESCRIPTION    = DESCRIPTION
-KEYWORDS            = ['ibeis', 'plugin', 'wildbook', 'ia']
+KEYWORDS            = ['ibeis', 'plugin', 'identification', 'wildbook', 'ia']
 URL                 = 'https://github.com/WildbookOrg/'
 DOWNLOAD_URL        = ''
 LICENSE             = 'Apache'
@@ -43,7 +43,7 @@ MINOR               = 1
 MICRO               = 0
 SUFFIX              = 'dev0'
 VERSION             = '%d.%d.%d.%s' % (MAJOR, MINOR, MICRO, SUFFIX)
-PACKAGES            = ['ibeis_plugin_example']
+PACKAGES            = ['ibeis_plugin_identification_example']
 
 
 def git_version():
@@ -75,7 +75,7 @@ def git_version():
     return git_revision
 
 
-def write_version_py(filename=os.path.join('ibeis_plugin_example', 'version.py')):
+def write_version_py(filename=os.path.join('ibeis_plugin_identification_example', 'version.py')):
     cnt = '''
 # THIS FILE IS GENERATED FROM SETUP.PY
 version = '%(version)s'

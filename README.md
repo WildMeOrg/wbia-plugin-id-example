@@ -1,4 +1,4 @@
-# IBEIS Plugin Example
+# IBEIS Identification Plugin Example
 An example of how to design and use a Python module as a plugin in the IBEIS IA system
 
 # Installation
@@ -6,7 +6,7 @@ An example of how to design and use a Python module as a plugin in the IBEIS IA 
 Install this plugin as a Python module using
 
 ```bash
-cd ~/code/ibeis_plugin_example/
+cd ~/code/ibeis_plugin_identification_example/
 python setup.py develop
 ```
 
@@ -14,7 +14,7 @@ python setup.py develop
 
 With the plugin installed, register the module name with the `IBEISControl.py` file
 in the ibeis repository located at `ibeis/ibeis/control/IBEISControl.py`.  Register
-the module by adding the string (for example, `ibeis_plugin_example`) to the
+the module by adding the string (for example, `ibeis_plugin_identification_example`) to the
 list `AUTOLOAD_PLUGIN_MODNAMES`.
 
 Then, load the web-based IBEIS IA service and open the URL that is registered with
@@ -27,10 +27,10 @@ python dev.py --web
 
 Navigate in a browser to http://127.0.0.1:5000/api/plugin/example/helloworld/ where
 this returns a formatted JSON response, including the serialized returned value
-from the `ibeis_plugin_example_hello_world()` function
+from the `ibeis_plugin_identification_example_hello_world()` function
 
 ```
-{"status": {"cache": -1, "message": "", "code": 200, "success": true}, "response": "[ibeis_plugin_example] hello world with IBEIS controller <IBEISController(testdb1) at 0x11e776e90>"}
+{"status": {"cache": -1, "message": "", "code": 200, "success": true}, "response": "[ibeis_plugin_identification_example] hello world with IBEIS controller <IBEISController(testdb1) at 0x11e776e90>"}
 ```
 
 # Python API
@@ -50,12 +50,12 @@ Type "help", "copyright", "credits" or "license" for more information.
 [depc] Initialize IMAGES depcache in u'/Datasets/testdb1/_ibsdb/_ibeis_cache'
 [ibs.__init__] END new IBEISController
 
->>> ibs.ibeis_plugin_example_hello_world()
-'[ibeis_plugin_example] hello world with IBEIS controller <IBEISController(testdb1) at 0x10b24c9d0>'
+>>> ibs.ibeis_plugin_identification_example_hello_world()
+'[ibeis_plugin_identification_example] hello world with IBEIS controller <IBEISController(testdb1) at 0x10b24c9d0>'
 ```
 
 The function from the plugin is automatically added as a method to the ibs object
-as `ibs.ibeis_plugin_example_hello_world()`, which is registered using the
+as `ibs.ibeis_plugin_identification_example_hello_world()`, which is registered using the
 `@register_ibs_method decorator`.
 
 

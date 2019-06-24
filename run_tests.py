@@ -8,20 +8,15 @@ import utool as ut
 def run_tests():
     # Build module list and run tests
     import sys
-    ut.change_term_title('RUN IBEIS_CNN TESTS')
+    ut.change_term_title('RUN ibeis_plugin_identification_example TESTS')
     exclude_doctests_fnames = set([
     ])
     exclude_dirs = [
-        '_broken',
-        #'old',
-        #'tests',
-        #'timeits',
-        #'_scripts',
-        #'_timeits',
-        #'_doc',
-        #'notebook',
+        '_doc',
+        '_page',
+        '*.egg-info',
     ]
-    dpath_list = ['ibeis_cnn']
+    dpath_list = ['ibeis_plugin_identification_example']
     doctest_modname_list = ut.find_doctestable_modnames(
         dpath_list, exclude_doctests_fnames, exclude_dirs)
 
