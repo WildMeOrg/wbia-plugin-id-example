@@ -810,7 +810,7 @@ class IdentificationExampleImageHashSumConfig(dt.Config):  # NOQA
         >>> config = IdentificationExampleImageHashSumConfig()
         >>> result = config.get_cfgstr()
         >>> print(result)
-        IdentificationExampleImageHashSumConfig()
+        IdentificationExampleImageHashSum()
     """
     _param_info_list = [
         ut.ParamInfo('hash_sum_mod', default=None, hideif=None),
