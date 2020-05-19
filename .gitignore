@@ -8,3 +8,5 @@ profile_output*.txt
 __pycache__
 _doc/_build
 _page/
+
+ibeis_plugin_identification_example/version.py

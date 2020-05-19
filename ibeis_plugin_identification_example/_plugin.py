@@ -604,7 +604,7 @@ def ibeis_plugin_identification_example_file_download(file_url):
         >>> # ENABLE_DOCTEST
         >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
         >>> import utool as ut
-        >>> file_url = 'https://cthulhu.dyn.wildme.io/public/data/lena.png'
+        >>> file_url = 'https://wildbookiarepository.azureedge.net/data/lena.png'
         >>> file_filepath = ibeis_plugin_identification_example_file_download(file_url)
         >>> file_bytes = open(file_filepath, 'rb').read()
         >>> file_hash_content = ut.hash_data(file_bytes)
@@ -615,7 +615,7 @@ def ibeis_plugin_identification_example_file_download(file_url):
         >>> # ENABLE_DOCTEST
         >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
         >>> import utool as ut
-        >>> file_url = 'https://cthulhu.dyn.wildme.io/public/data/lena.png'
+        >>> file_url = 'https://wildbookiarepository.azureedge.net/data/lena.png'
         >>> file_filepath = ibeis_plugin_identification_example_file_download(file_url)
         >>> # Force a deletion event on this file to force a re-download
         >>> ut.delete(file_filepath)
