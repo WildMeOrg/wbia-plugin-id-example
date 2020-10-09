@@ -337,19 +337,19 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 # To run a given test code block, one must simply tell python to execute
 # the module and pass in the function name and the test index.  For example, if
 # you want to run the first code test for the function
-# ibs.wbia_plugin_identification_example_hello_world() in this file, you can call
+# ibs.wbia_plugin_id_hello_world() in this file, you can call
 #
-#     python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_hello_world:0
+#     python -m wbia_id._plugin --test-wbia_plugin_id_hello_world:0
 #
 # Note the ":0" index specifier at the end of this Command Line call.  To run all
 # of the tests for a specified function, you must remove any post-fix.  For example,
 #
-#     python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_hello_world
+#     python -m wbia_id._plugin --test-wbia_plugin_id_hello_world
 #
 # will run all of the tests for that function.  To run all tests for an entire file,
 # you can simply call:
 #
-#     python -m wbia_plugin_identification_example._plugin --allexamples
+#     python -m wbia_id._plugin --allexamples
 #
 # We also provide a handy script at the top level path for this repository called
 # "run_tests.py" that will execute all of the tests for all files.  A summary
@@ -385,22 +385,22 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 # Any function that has the @profile decorator on the function will be profiled
 # for run-time efficiency.  For example, running from the CLI:
 #
-#     python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_file_download:1 --profile
+#     python -m wbia_id._plugin --test-wbia_plugin_id_file_download:1 --profile
 #
 # Will run the test of downloading an image from a remote server, check a local
 # copy, delete it, then re-download the image.  The output of this call will look
 # something like this:
 #
-#     **[TEST.FINISH] wbia_plugin_identification_example_file_download -- SUCCESS
+#     **[TEST.FINISH] wbia_plugin_id_file_download -- SUCCESS
 #     [util_io] * Writing to text file: timeings.txt
 #     L_____________________________________________________________
 #     +-------
-#     | finished testing fpath='wbia_plugin_identification_example/wbia_plugin_identification_example/_plugin.py'
+#     | finished testing fpath='wbia_plugin_id/wbia_plugin_id/_plugin.py'
 #     | passed 1 / 1
 #     L-------
 #     Dumping Profile Information
 #      -1.00 seconds - None                                             :None:None
-#       0.14 seconds - wbia_plugin_identification_example_file_download:wbia_plugin_identification_example/wbia_plugin_identification_example/_plugin.py:536
+#       0.14 seconds - wbia_plugin_id_file_download:wbia_plugin_id/wbia_plugin_id/_plugin.py:536
 #     [util_io] * Writing to text file: profile_output.txt
 #     [util_io] * Writing to text file: profile_output.<timestamp>.txt
 #
@@ -413,7 +413,7 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 #     ==============================================================
 #     ...
 #     586         2         48.0     24.0      0.0      with ut.Timer() as timer:
-#     587         2     136968.0  68484.0     99.9          file_filepath = ut.grab_file_url(file_url, appname='wbia_plugin_identification_example', check_hash=True)
+#     587         2     136968.0  68484.0     99.9          file_filepath = ut.grab_file_url(file_url, appname='wbia_plugin_id', check_hash=True)
 #     588
 #     589                                               # ut.Timer() is a handy context that allows for you to quickly get the run-time
 #     590                                               # of the code block under its indentation.
@@ -447,7 +447,7 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 # and whenever possible.  The use of ut.embed() (we commonly import "utool" with
 # the shorthand namespace of "ut") is used throughout the WBIA code base and is
 # supremely helpful when debugging troublesome code.  We have set an example below
-# that uses ut.embed() in the ibs.wbia_plugin_identification_example_hello_world()
+# that uses ut.embed() in the ibs.wbia_plugin_id_hello_world()
 # documentation.  We highly recommend calling this function's example test and
 # play around with the ibs controller object.  The ibs controller supports tab
 # completion for all method functions.  For example, when in the embedded iPython
@@ -520,7 +520,7 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 
 @register_ibs_method
 @register_api('/api/plugin/example/identification/helloworld/', methods=['GET'])
-def wbia_plugin_identification_example_hello_world(ibs):
+def wbia_plugin_id_hello_world(ibs):
     r"""
     A "Hello world!" example for the WBIA identification plug-in.
 
@@ -534,25 +534,25 @@ def wbia_plugin_identification_example_hello_world(ibs):
         list: gid_list
 
     CommandLine:
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_hello_world
+        python -m wbia_id._plugin --test-wbia_plugin_id_hello_world
 
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_hello_world:0
+        python -m wbia_id._plugin --test-wbia_plugin_id_hello_world:0
 
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_hello_world:1
+        python -m wbia_id._plugin --test-wbia_plugin_id_hello_world:1
 
     RESTful:
         Method: GET
 
         URL:    /api/plugin/example/identification/helloworld/
 
-    Example0:
+    Example:
         >>> # ENABLE_DOCTEST
         >>> import wbia
         >>> import utool as ut
         >>> from wbia.init import sysres
         >>> dbdir = sysres.ensure_testdb_identification_example()
         >>> ibs = wbia.opendb(dbdir=dbdir)
-        >>> resp = ibs.wbia_plugin_identification_example_hello_world()
+        >>> resp = ibs.wbia_plugin_id_hello_world()
         >>>
         >>> # Result is a special variable in our doctests.  If the last line
         >>> # contains a "result" assignment, then the test checks if the lines
@@ -564,7 +564,8 @@ def wbia_plugin_identification_example_hello_world(ibs):
         >>>     'annotations' : len(ibs.get_valid_aids()),
         >>>     'names'       : len(ibs.get_valid_nids()),
         >>> })
-        [wbia_plugin_identification_example] hello world with WBIA controller <WBIAController(testdb_identification) with UUID 1654bdc9-4a14-43f7-9a6a-5f10f2eaa279>
+        >>> print(result)
+        [wbia_plugin_id] hello world with WBIA controller <IBEISController(testdb_identification) with UUID 1654bdc9-4a14-43f7-9a6a-5f10f2eaa279>
         {
             'annotations': 70,
             'database': UUID('1654bdc9-4a14-43f7-9a6a-5f10f2eaa279'),
@@ -573,7 +574,7 @@ def wbia_plugin_identification_example_hello_world(ibs):
             'names': 21,
         }
 
-    Example1:
+    Example:
         >>> # DISABLE_DOCTEST
         >>> import wbia
         >>> import utool as ut
@@ -583,47 +584,46 @@ def wbia_plugin_identification_example_hello_world(ibs):
         >>> ut.embed()
     """
     args = (ibs,)
-    resp = (
-        '[wbia_plugin_identification_example] hello world with WBIA controller %r' % args
-    )
+    resp = '[wbia_plugin_id] hello world with WBIA controller %r' % args
     return resp
 
 
 @profile
 @register_ibs_method
-def wbia_plugin_identification_example_file_download(file_url):
+def wbia_plugin_id_file_download(file_url):
     r"""
     An example of how to download and cache a file on disk from a web-server.
     This function downloads the image to a local application folder and returns
     the local absolute path.
 
     CommandLine:
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_file_download
+        python -m wbia_id._plugin --test-wbia_plugin_id_file_download
 
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_file_download:0
+        python -m wbia_id._plugin --test-wbia_plugin_id_file_download:0
 
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_file_download:1
+        python -m wbia_id._plugin --test-wbia_plugin_id_file_download:1
 
-    Example0:
+    Example:
         >>> # ENABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> import utool as ut
         >>> file_url = 'https://wildbookiarepository.azureedge.net/data/lena.png'
-        >>> file_filepath = wbia_plugin_identification_example_file_download(file_url)
+        >>> file_filepath = wbia_plugin_id_file_download(file_url)
         >>> file_bytes = open(file_filepath, 'rb').read()
         >>> file_hash_content = ut.hash_data(file_bytes)
         >>> result = file_hash_content
+        >>> print(result)
         pgheflebtrskuncufztrynlzpkmkibwg
 
-    Example1:
+    Example:
         >>> # ENABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> import utool as ut
         >>> file_url = 'https://wildbookiarepository.azureedge.net/data/lena.png'
-        >>> file_filepath = wbia_plugin_identification_example_file_download(file_url)
+        >>> file_filepath = wbia_plugin_id_file_download(file_url)
         >>> # Force a deletion event on this file to force a re-download
         >>> ut.delete(file_filepath)
-        >>> file_filepath_ = wbia_plugin_identification_example_file_download(file_url)
+        >>> file_filepath_ = wbia_plugin_id_file_download(file_url)
         >>> assert file_filepath == file_filepath_
     """
     # Download the file to the local computer's application cache directory:
@@ -640,9 +640,14 @@ def wbia_plugin_identification_example_file_download(file_url):
     # if the user asks for "https://domain.com/file.txt", then the hash check will
     # ask the server for the value of "https://domain.com/file.txt.md5".
     with ut.Timer() as timer:
-        file_filepath = ut.grab_file_url(
-            file_url, appname='wbia_plugin_identification_example', check_hash=True
-        )
+        try:
+            file_filepath = ut.grab_file_url(
+                file_url, appname='wbia_plugin_id', check_hash=True
+            )
+        except FileNotFoundError:
+            file_filepath = ut.grab_file_url(
+                file_url, appname='wbia_plugin_id', check_hash=False
+            )
 
     # ut.Timer() is a handy context that allows for you to quickly get the run-time
     # of the code block under its indentation.
@@ -659,23 +664,23 @@ def wbia_plugin_identification_example_file_download(file_url):
 class IdentificationExampleImageHashConfig(dt.Config):  # NOQA
     """
     CommandLine:
-        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleImageHashConfig
+        python -m wbia_id._plugin --test-IdentificationExampleImageHashConfig
 
-        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleImageHashConfig:0
+        python -m wbia_id._plugin --test-IdentificationExampleImageHashConfig:0
 
-        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleImageHashConfig:1
+        python -m wbia_id._plugin --test-IdentificationExampleImageHashConfig:1
 
-    Example0:
+    Example:
         >>> # ENABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> config = IdentificationExampleImageHashConfig()
         >>> result = config.get_cfgstr()
         >>> print(result)
         IdentificationExampleImageHash(hash_algorithm=sha1,hash_rounds=1000000)
 
-    Example1:
+    Example:
         >>> # ENABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> config = IdentificationExampleImageHashConfig(hash_algorithm='sha256', hash_rounds=100, hash_salt=b'test')
         >>> result = config.get_cfgstr()
         >>> print(result)
@@ -698,7 +703,7 @@ class IdentificationExampleImageHashConfig(dt.Config):  # NOQA
     fname='identification_example',
     chunksize=4,
 )
-def wbia_plugin_identification_example_image_hash(depc, gid_list, config):
+def wbia_plugin_id_image_hash(depc, gid_list, config):
     r"""
     A toy example of creating a crypto-graphically secure (salted) hash of an on-disk image.
 
@@ -737,7 +742,7 @@ def wbia_plugin_identification_example_image_hash(depc, gid_list, config):
         https://docs.python.org/2/library/hashlib.html#key-derivation
 
     CommandLine:
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_image_hash
+        python -m wbia_id._plugin --test-wbia_plugin_id_image_hash
 
     Example:
         >>> # ENABLE_DOCTEST
@@ -776,6 +781,7 @@ def wbia_plugin_identification_example_image_hash(depc, gid_list, config):
         >>> ibs.depc_image.delete_property_all('IdentificationExampleImageHash', gid_list)
         >>>
         >>> result = hash_list_recompute[0]
+        >>> print(result)
         b'3006e4db0ed513a0bdb8eda85ee14d5d16ca7165'
     """
     import hashlib
@@ -815,11 +821,11 @@ def wbia_plugin_identification_example_image_hash(depc, gid_list, config):
 class IdentificationExampleImageHashSumConfig(dt.Config):  # NOQA
     """
     CommandLine:
-        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleImageHashSumConfig
+        python -m wbia_id._plugin --test-IdentificationExampleImageHashSumConfig
 
-    Example0:
+    Example:
         >>> # ENABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> config = IdentificationExampleImageHashSumConfig()
         >>> result = config.get_cfgstr()
         >>> print(result)
@@ -840,9 +846,7 @@ class IdentificationExampleImageHashSumConfig(dt.Config):  # NOQA
     fname='identification_example',
     chunksize=100,
 )
-def wbia_plugin_identification_example_image_hash_sum(
-    depc, image_hash_rowid_list, config
-):
+def wbia_plugin_id_image_hash_sum(depc, image_hash_rowid_list, config):
     r"""
     A toy example of creating a sum for a crypto-graphically secure (salted) hash,
     which is computed by a previous depc node.  The sum of a hash is computed as
@@ -854,7 +858,7 @@ def wbia_plugin_identification_example_image_hash_sum(
     loading image assets (which can be quite memory intensive) into memory.
 
     CommandLine:
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_image_hash_sum
+        python -m wbia_id._plugin --test-wbia_plugin_id_image_hash_sum
 
     Example:
         >>> # ENABLE_DOCTEST
@@ -889,6 +893,7 @@ def wbia_plugin_identification_example_image_hash_sum(
         >>> ibs.depc_image.delete_property_all('IdentificationExampleImageHashSum', gid_list)
         >>>
         >>> result = hash_sum_list
+        >>> print(result)
         [53, 39, 97, 7, 71, 26, 75, 89, 86, 90]
     """
     # Get the configuration
@@ -922,11 +927,11 @@ def wbia_plugin_identification_example_image_hash_sum(
 class IdentificationExampleImageHashProdConfig(dt.Config):  # NOQA
     """
     CommandLine:
-        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleImageHashProdConfig
+        python -m wbia_id._plugin --test-IdentificationExampleImageHashProdConfig
 
-    Example0:
+    Example:
         >>> # ENABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> config = IdentificationExampleImageHashProdConfig()
         >>> result = config.get_cfgstr()
         >>> print(result)
@@ -947,9 +952,7 @@ class IdentificationExampleImageHashProdConfig(dt.Config):  # NOQA
     fname='identification_example',
     chunksize=100,
 )
-def wbia_plugin_identification_example_image_hash_prod(
-    depc, image_hash_rowid_list, config
-):
+def wbia_plugin_id_image_hash_prod(depc, image_hash_rowid_list, config):
     r"""
     A toy example of creating a product for a crypto-graphically secure (salted) hash,
     which is computed by a previous depc node.  It's algorithmic solution is unchanged
@@ -961,7 +964,7 @@ def wbia_plugin_identification_example_image_hash_prod(
     of a common parent in depc.
 
     CommandLine:
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_image_hash_prod
+        python -m wbia_id._plugin --test-wbia_plugin_id_image_hash_prod
 
     Example:
         >>> # ENABLE_DOCTEST
@@ -983,6 +986,7 @@ def wbia_plugin_identification_example_image_hash_prod(
         >>> ibs.depc_image.delete_property_all('IdentificationExampleImageHashProd', gid_list)
         >>>
         >>> result = hash_prod_list
+        >>> print(result)
         [101, 657, 285, 945, 874, 1, 545, 657, 402, 889]
     """
     # Get the configuration
@@ -1025,11 +1029,11 @@ class IdentificationExampleOracleRequest(dt.base.VsOneSimilarityRequest):  # NOQ
     ...for now.
 
     CommandLine:
-        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleOracleRequest
+        python -m wbia_id._plugin --test-IdentificationExampleOracleRequest
 
     Example:
         >>> # ENABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> import wbia
         >>> import itertools as it
         >>> from wbia.init import sysres
@@ -1040,7 +1044,7 @@ class IdentificationExampleOracleRequest(dt.base.VsOneSimilarityRequest):  # NOQ
         >>> aid_list = aid_list[:10]
         >>> request = IdentificationExampleOracleRequest.new(ibs.depc_annot, aid_list, aid_list)
         >>>
-        >>> result = request
+        >>> print(request)
         <IdentificationExampleOracleRequest((testdb_identification) nQ=10, nD=10, nP=90 zhafuthnemeinvyi)>
     """
 
@@ -1162,11 +1166,11 @@ class IdentificationExampleOracleRequest(dt.base.VsOneSimilarityRequest):  # NOQ
 class IdentificationExampleOracleConfig(dt.Config):  # NOQA
     """
     CommandLine:
-        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleOracleConfig
+        python -m wbia_id._plugin --test-IdentificationExampleOracleConfig
 
     Example:
         >>> # ENABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> config = IdentificationExampleOracleConfig()
         >>> result = config.get_cfgstr()
         >>> print(result)
@@ -1189,7 +1193,7 @@ class IdentificationExampleOracleConfig(dt.Config):  # NOQA
     fname='identification_example',
     chunksize=None,
 )
-def wbia_plugin_identification_example_oracle(depc, qaid_list, daid_list, config):
+def wbia_plugin_id_oracle(depc, qaid_list, daid_list, config):
     r"""
     This function is called automatically by the IdentificationExampleOracleRequest
     whenever the appropriate ID algorithm 'IdentificationExampleOracle' is specified
@@ -1229,19 +1233,19 @@ def wbia_plugin_identification_example_oracle(depc, qaid_list, daid_list, config
         - Calls Python function query_chips_graph (Endpoint for /api/query/graph/)
 
     CommandLine:
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_oracle:0
+        python -m wbia_id._plugin --test-wbia_plugin_id_oracle:0
 
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_oracle:0 --show
+        python -m wbia_id._plugin --test-wbia_plugin_id_oracle:0 --show
 
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_oracle:1
+        python -m wbia_id._plugin --test-wbia_plugin_id_oracle:1
 
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_oracle:2
+        python -m wbia_id._plugin --test-wbia_plugin_id_oracle:2
 
-        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_oracle:3
+        python -m wbia_id._plugin --test-wbia_plugin_id_oracle:3
 
-    Example0:
+    Example:
         >>> # ENABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> import wbia
         >>> import itertools as it
         >>> from wbia.init import sysres
@@ -1263,9 +1267,9 @@ def wbia_plugin_identification_example_oracle(depc, qaid_list, daid_list, config
         >>> am.ishow_analysis(request)
         >>> ut.show_if_requested()
 
-    Example1:
+    Example:
         >>> # ENABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> import wbia
         >>> import itertools as it
         >>> from wbia.init import sysres
@@ -1281,9 +1285,9 @@ def wbia_plugin_identification_example_oracle(depc, qaid_list, daid_list, config
         >>> result_dict = ibs.query_chips_graph(qaid_list, daid_list, query_config_dict=query_config_dict)
         >>> print(result_dict)
 
-    Example2:
+    Example:
         >>> # DISABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> import wbia
         >>> import itertools as it
         >>> from wbia.init import sysres
@@ -1298,9 +1302,9 @@ def wbia_plugin_identification_example_oracle(depc, qaid_list, daid_list, config
         >>> query_config_dict = {}
         >>> result_dict = ibs.query_chips_graph(qaid_list, daid_list, query_config_dict=query_config_dict)
 
-    Example3:
+    Example:
         >>> # DISABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> import wbia
         >>> import itertools as it
         >>> from wbia.init import sysres
@@ -1322,9 +1326,9 @@ def wbia_plugin_identification_example_oracle(depc, qaid_list, daid_list, config
         >>>
         >>> result_dict = ibs.query_chips_graph(qaid_list, daid_list, query_config_dict=query_config_dict)
 
-    Example4:
+    Example:
         >>> # DISABLE_DOCTEST
-        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_id._plugin import *  # NOQA
         >>> import wbia
         >>> import itertools as it
         >>> from wbia.init import sysres
@@ -1390,7 +1394,7 @@ def wbia_plugin_identification_example_oracle(depc, qaid_list, daid_list, config
 if __name__ == '__main__':
     r"""
     CommandLine:
-        python -m wbia_plugin_identification_example._plugin --allexamples
+        python -m wbia_id._plugin --allexamples
     """
     import multiprocessing
 
