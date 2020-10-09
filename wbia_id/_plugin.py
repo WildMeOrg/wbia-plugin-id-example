@@ -1,24 +1,24 @@
 from __future__ import absolute_import, division, print_function
-from ibeis.control import controller_inject
-from ibeis.constants import IMAGE_TABLE, ANNOTATION_TABLE
-from ibeis.constants import CONTAINERIZED, PRODUCTION  # NOQA
+from wbia.control import controller_inject
+from wbia.constants import IMAGE_TABLE, ANNOTATION_TABLE
+from wbia.constants import CONTAINERIZED, PRODUCTION  # NOQA
+from wbia import dtool as dt
 import numpy as np
-import dtool as dt
 import utool as ut
 import vtool as vt
-import ibeis
+import wbia
 import tqdm
 import os
 (print, rrr, profile) = ut.inject2(__name__)
 
 
-# IBEIS Controller and Python API
+# WBIA Controller and Python API
 # -------------------------------
 #
-# IBEIS supports dynamically-injected methods to the controller object.  Any
+# WBIA supports dynamically-injected methods to the controller object.  Any
 # function that you wrap with the @register_ibs_method decorator is automatically
 # added to the controller as ibs.<function_name>() method.  The function then becomes
-# accessible anywhere in the codebase if one has access to the IBEIS controller.
+# accessible anywhere in the codebase if one has access to the WBIA controller.
 # For example,
 #
 #     @register_ibs_method
@@ -31,30 +31,30 @@ import os
 #
 # Database Structure
 # ------------------
-# An IBEIS database, at it's core, is simply a folder on the local file system.
-# IBEIS uses SQLite3 and static folders for all of its database and asset storage
+# An WBIA database, at it's core, is simply a folder on the local file system.
+# WBIA uses SQLite3 and static folders for all of its database and asset storage
 # and has the following structure:
 #
-#     ibeis_database_folder/
+#     wbia_database_folder/
 #         _ibsdb/
-#             _ibeis_backups/
-#             _ibeis_cache/
-#             _ibeis_logs/
+#             _wbia_backups/
+#             _wbia_cache/
+#             _wbia_logs/
 #             images/
-#             _ibeis_database.sqlite3
-#             _ibeis_staging.sqlite3
+#             _wbia_database.sqlite3
+#             _wbia_staging.sqlite3
 #             <other miscellaneous folders and files>
 #         smart_patrol/
 #         <other miscellaneous folders and files>
 #
 # The volatile (i.e. cannot be re-computed) database files and folders are:
 #
-#     _ibeis_database.sqlite3
-#         The primary IBEIS database.  This database contains many tables to store
+#     _wbia_database.sqlite3
+#         The primary WBIA database.  This database contains many tables to store
 #         image, annotation, name, asset properties and store various decisions and
 #         computed results.
 #
-#     _ibeis_staging.sqlite3
+#     _wbia_staging.sqlite3
 #         A staging database for semi-temporary results, content in this database is
 #         intended to eventually be committed or resolved into the primary database
 #
@@ -66,10 +66,10 @@ import os
 #
 # We also have extensive caching processes for different computer vision and machine
 # learning results along with modified versions of the original assets.  All cached
-# data is stored in the _ibsdb/_ibeis_cache/ folder.  This folder can be deleted
+# data is stored in the _ibsdb/_wbia_cache/ folder.  This folder can be deleted
 # freely at any point to delete any pre-computed results.  Conversely, we also take
-# daily snapshots of the primary and staging database whenever the IBEIS controller
-# is first started.  These backups are stored in _ibsdb/_ibeis_backups/.  The IBEIS
+# daily snapshots of the primary and staging database whenever the WBIA controller
+# is first started.  These backups are stored in _ibsdb/_wbia_backups/.  The WBIA
 # controller also supports incremental updates, so a database backup is also
 # performed before any database update.
 #
@@ -78,7 +78,7 @@ import os
 #
 # First-order Data Objects
 # ------------------------
-# There are 4 main data constructs in IBEIS:
+# There are 4 main data constructs in WBIA:
 #
 #     ImageSets   - A collection of images into a single group.  This grouping is
 #                   used as a very general association and can indicate, for example,
@@ -91,7 +91,7 @@ import os
 #                   a member of multiple ImageSets.
 #     Annotations - Pixel regions within an Image to designate a single animal.
 #                   Annotations are, in their most basic form, a bounding box.
-#                   Bounding boxes in IBEIS are parameterized by (xtl, ytl, w, h)
+#                   Bounding boxes in WBIA are parameterized by (xtl, ytl, w, h)
 #                   where "xtl" designates "x pixel coordinate for the top-left corner",
 #                   "ytl" designates "y pixel coordinate for the top-left corner",
 #                   "w" designates "the width of the box in pixel coordinates", and
@@ -99,9 +99,9 @@ import os
 #                   Images and Annotations have a one-to-many relationship.
 #     Names       - A ID label for an annotation.  A one-to-many relationship
 #                   between Names and Annotations is usually the end-result of
-#                   using the IBEIS system.
+#                   using the WBIA system.
 #
-# In general, a single instance of the IBEIS code base only has one IBEIS controller
+# In general, a single instance of the WBIA code base only has one WBIA controller
 # (commonly referred to by the variable name "ibs") and is the primary development
 # handle for any new features.  The controller is packed with very handy functions,
 # including:
@@ -124,18 +124,18 @@ import os
 #
 # Controller API Injection
 # ------------------------
-# Any function that is decorated by @register_ibs_method should accept the IBEIS
+# Any function that is decorated by @register_ibs_method should accept the WBIA
 # "ibs" controller object as the first parameter.
 #
-# IMPORTANT: To be enabled, a plug-in must be manually registered with the IBEIS
+# IMPORTANT: To be enabled, a plug-in must be manually registered with the WBIA
 # controller.  The registration process involves adding the module import name for
-# this _plugin.py file to a list of plugins.  This list lives in the main IBEIS
+# this _plugin.py file to a list of plugins.  This list lives in the main WBIA
 # repository at:
 #
-#     ibeis/ibeis/control/IBEISControl.py
+#     wbia/wbia/control/WBIAControl.py
 #
 # and added to the list with variable name "AUTOLOAD_PLUGIN_MODNAMES" at the top
-# of the file.  On load, the IBEIS controller will add its own injected controller
+# of the file.  On load, the WBIA controller will add its own injected controller
 # functions and will then proceed to add any external plug-in functions.  The
 # injection code will look primarily for any functions with the @register_ibs_method
 # decorator, but will also add any of the decorators described below for web
@@ -143,10 +143,10 @@ import os
 _, register_ibs_method = controller_inject.make_ibs_register_decorator(__name__)
 
 
-# IBEIS REST API, Web Interface, and Job Engine
+# WBIA REST API, Web Interface, and Job Engine
 # ---------------------------------------------
 #
-# IBEIS supports a web-based REST API that allows for local functions to be called
+# WBIA supports a web-based REST API that allows for local functions to be called
 # from public end-points.  The POST and GET arguments that are passed to the
 # web server by the client are automatically parsed into Python-valid objects
 # using a customized JSON converter.  Any responses from API calls are also wrapped
@@ -158,7 +158,7 @@ _, register_ibs_method = controller_inject.make_ibs_register_decorator(__name__)
 # (e.g. GET, POST, PUT, DELETE) that are allowed.  The same REST endpoint can point
 # to different functions through the specifications of different methods.
 #
-# IBEIS REST API
+# WBIA REST API
 # --------------
 # There already exists an extensive REST API that mirrors the existing Python
 # API, but is a curated subset of useful functions.  For example, the Python API
@@ -178,9 +178,9 @@ _, register_ibs_method = controller_inject.make_ibs_register_decorator(__name__)
 # or any other non-JSON response.  Functions that are decorated with @register_route
 # also benefit from the same parameter JSON serialization as @register_api.
 #
-# IBEIS Web Interface
+# WBIA Web Interface
 # -------------------
-# IBEIS also supports a basic web interface with viewing tools and curation tools.
+# WBIA also supports a basic web interface with viewing tools and curation tools.
 # For example, the routes /view/imagesets/, /view/images/, /view/annotations/,
 # and /view/parts/ allow for a user to quickly see the state of the database.
 # There is also a batched uploading function to easily add a handful of images to
@@ -196,14 +196,14 @@ _, register_ibs_method = controller_inject.make_ibs_register_decorator(__name__)
 # While not required, we STRONGLY suggest all API endpoints in a plug-in to be
 # prefixed with "/api/plugin/<Plug-in Name>/.../.../" to keep the registered APIs from
 # conflicting.  We also suggest doing the same with your function names as well
-# that are injected into the IBEIS controller on load, for example using a
-# function name of ibs.ibeis_plugin_<Plug-in Name>_..._...().
+# that are injected into the WBIA controller on load, for example using a
+# function name of ibs.wbia_plugin_<Plug-in Name>_..._...().
 #
 # Background API Job Engine
 # -------------------------
 # The REST API has a background "job engine".  The purpose of the job engine
 # is to preserve the special properties of a responsive and state-less web
-# paradigm.  In short, the IBEIS web controller will automatically serialized
+# paradigm.  In short, the WBIA web controller will automatically serialized
 # concurrent requests but some API calls involve a very long processing delay.
 # If a long API call is called in the main thread, it will deny any and all
 # simultaneous web calls from resolving.  The solution is to mode any long API
@@ -218,16 +218,16 @@ _, register_ibs_method = controller_inject.make_ibs_register_decorator(__name__)
 # original request metadata, and retrieve any results.  The job engine supports
 # automatic callbacks with a specified URL and HTTP method when the job is
 # complete.
-register_api   = controller_inject.get_ibeis_flask_api(__name__)
-register_route = controller_inject.get_ibeis_flask_route(__name__)
+register_api = controller_inject.get_wbia_flask_api(__name__)
+register_route = controller_inject.get_wbia_flask_route(__name__)
 
 
-# IBEIS Dependency Graph
+# WBIA Dependency Graph
 # ----------------------
 #
-# IBEIS supports a dependency-graph cache computation structure for easy pipelining.
+# WBIA supports a dependency-graph cache computation structure for easy pipelining.
 # This is similar to other frameworks (e.g. Luigi) but has been customized and
-# implemented by hand to resolve assets consistent with the IBEIS database.
+# implemented by hand to resolve assets consistent with the WBIA database.
 #
 # In general, a dependency cache (referred to by "depc" in the code base) is a
 # coding tool to eliminate the complexity of managing state and staged pipeline
@@ -265,7 +265,7 @@ register_route = controller_inject.get_ibeis_flask_route(__name__)
 # HashProd on Image RowID=10 (with the same configuration) will simply retrieve
 # the pre-computed Hash for RowID=10.
 #
-# The IBEIS dependency cache infrastructure designates three ROOT object types
+# The WBIA dependency cache infrastructure designates three ROOT object types
 # for this type of computation: Images, Annotations, and Parts.  There exists
 # three parallel decorators that allow one to make a new function for the
 # appropriate dependency graph tree.  Adding a new node to the graph requires
@@ -280,13 +280,13 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 # register_preproc_part  = controller_inject.register_preprocs['part']
 
 
-# IBEIS Code Structure, Documentation, Tests, Linting, and Profiling
+# WBIA Code Structure, Documentation, Tests, Linting, and Profiling
 # ------------------------------------------------------------------
-# The IBEIS code based is actually a collection of 17 high-level repositories:
+# The WBIA code based is actually a collection of 17 high-level repositories:
 #
-#     Core IBEIS repositories
-#         ibeis
-#         ibeis_cnn  (deprecated soon)
+#     Core WBIA repositories
+#         wbia
+#         wbia_cnn  (deprecated soon)
 #
 #     Core Utility repositories (in order of most use)
 #         utool
@@ -308,8 +308,8 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 #         hesaff
 #
 #     First-party Plug-in repositories
-#         ibeis-curvrank-module
-#         ibeis-flukematch-module
+#         wbia-curvrank-module
+#         wbia-flukematch-module
 #
 # It is important to have all of these repositories installed and configured with
 # Python's package manager.  If otherwise specified, the development branch for
@@ -317,9 +317,9 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 #
 # Code Documentation
 # ------------------
-# The IBEIS documentation style uses a modified version of Sphinx "doctests" for
+# The WBIA documentation style uses a modified version of Sphinx "doctests" for
 # all documentation and testing.  The ability to write good documentation directly
-# in the header of the function is of high value by any contributor to the IBEIS
+# in the header of the function is of high value by any contributor to the WBIA
 # code base and any plug-in maintainer.  We provide examples of how to correctly
 # document your code throughout this _plugin.py file.
 #
@@ -335,19 +335,19 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 # To run a given test code block, one must simply tell python to execute
 # the module and pass in the function name and the test index.  For example, if
 # you want to run the first code test for the function
-# ibs.ibeis_plugin_identification_example_hello_world() in this file, you can call
+# ibs.wbia_plugin_identification_example_hello_world() in this file, you can call
 #
-#     python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_hello_world:0
+#     python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_hello_world:0
 #
 # Note the ":0" index specifier at the end of this Command Line call.  To run all
 # of the tests for a specified function, you must remove any post-fix.  For example,
 #
-#     python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_hello_world
+#     python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_hello_world
 #
 # will run all of the tests for that function.  To run all tests for an entire file,
 # you can simply call:
 #
-#     python -m ibeis_plugin_identification_example._plugin --allexamples
+#     python -m wbia_plugin_identification_example._plugin --allexamples
 #
 # We also provide a handy script at the top level path for this repository called
 # "run_tests.py" that will execute all of the tests for all files.  A summary
@@ -361,8 +361,8 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 #
 # Python Code Linting (Flake8)
 # ----------------------------
-# All IBEIS Python code requires a Linter to be run on any code contributions
-# for the main code base.  While we do not explicitly require this for IBEIS
+# All WBIA Python code requires a Linter to be run on any code contributions
+# for the main code base.  While we do not explicitly require this for WBIA
 # plug-ins, we STRONGLY suggest using one for all Python code.  We do acknowledge,
 # however, that the full Python Flake8 (http://flake8.pycqa.org/en/latest/)
 # specification is quire restrictive.  We have a set of allowed errors and warnings
@@ -383,22 +383,22 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 # Any function that has the @profile decorator on the function will be profiled
 # for run-time efficiency.  For example, running from the CLI:
 #
-#     python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_file_download:1 --profile
+#     python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_file_download:1 --profile
 #
 # Will run the test of downloading an image from a remote server, check a local
 # copy, delete it, then re-download the image.  The output of this call will look
 # something like this:
 #
-#     **[TEST.FINISH] ibeis_plugin_identification_example_file_download -- SUCCESS
+#     **[TEST.FINISH] wbia_plugin_identification_example_file_download -- SUCCESS
 #     [util_io] * Writing to text file: timeings.txt
 #     L_____________________________________________________________
 #     +-------
-#     | finished testing fpath='ibeis_plugin_identification_example/ibeis_plugin_identification_example/_plugin.py'
+#     | finished testing fpath='wbia_plugin_identification_example/wbia_plugin_identification_example/_plugin.py'
 #     | passed 1 / 1
 #     L-------
 #     Dumping Profile Information
 #      -1.00 seconds - None                                             :None:None
-#       0.14 seconds - ibeis_plugin_identification_example_file_download:ibeis_plugin_identification_example/ibeis_plugin_identification_example/_plugin.py:536
+#       0.14 seconds - wbia_plugin_identification_example_file_download:wbia_plugin_identification_example/wbia_plugin_identification_example/_plugin.py:536
 #     [util_io] * Writing to text file: profile_output.txt
 #     [util_io] * Writing to text file: profile_output.<timestamp>.txt
 #
@@ -411,7 +411,7 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 #     ==============================================================
 #     ...
 #     586         2         48.0     24.0      0.0      with ut.Timer() as timer:
-#     587         2     136968.0  68484.0     99.9          file_filepath = ut.grab_file_url(file_url, appname='ibeis_plugin_identification_example', check_hash=True)
+#     587         2     136968.0  68484.0     99.9          file_filepath = ut.grab_file_url(file_url, appname='wbia_plugin_identification_example', check_hash=True)
 #     588
 #     589                                               # ut.Timer() is a handy context that allows for you to quickly get the run-time
 #     590                                               # of the code block under its indentation.
@@ -431,28 +431,28 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 # Other miscellaneous notes
 # -------------------------
 #
-# Note 1: The IBEIS code base has a constants file for a lot of convenient
+# Note 1: The WBIA code base has a constants file for a lot of convenient
 # conversions and names of constructs.  This constants module also keeps track of
 # very convenient environment variables:
 #
-#     ibeis.constants.CONTAINERIZED  (Set to True if running inside a Docker container)
-#     ibeis.constants.PRODUCTION     (Set to True if running in production mode)
+#     wbia.constants.CONTAINERIZED  (Set to True if running inside a Docker container)
+#     wbia.constants.PRODUCTION     (Set to True if running in production mode)
 #
 # When PRODUCTION is set to True, please observe a restraint in resource utilization
 # for system memory, number of concurrent threads, and GPU memory.
 #
 # Note 2: We suggest to use interactive embedding with utool.embed() whenever
 # and whenever possible.  The use of ut.embed() (we commonly import "utool" with
-# the shorthand namespace of "ut") is used throughout the IBEIS code base and is
+# the shorthand namespace of "ut") is used throughout the WBIA code base and is
 # supremely helpful when debugging troublesome code.  We have set an example below
-# that uses ut.embed() in the ibs.ibeis_plugin_identification_example_hello_world()
+# that uses ut.embed() in the ibs.wbia_plugin_identification_example_hello_world()
 # documentation.  We highly recommend calling this function's example test and
 # play around with the ibs controller object.  The ibs controller supports tab
 # completion for all method functions.  For example, when in the embedded iPython
 # terminal, you can input:
 #
 #     In [1]: ibs
-#     Out[1]: <IBEISController(testdb_identification) with UUID 1654bdc9-4a14-43f7-9a6a-5f10f2eaa279>
+#     Out[1]: <WBIAController(testdb_identification) with UUID 1654bdc9-4a14-43f7-9a6a-5f10f2eaa279>
 #
 #     In [2]: gid_list = ibs.get_valid_gids()
 #
@@ -465,24 +465,24 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 #            [< get_image_party_rowids()           get_image_sizes()                  get_image_thumbpath()              >]
 #            [  get_image_party_tag()              get_image_species_rowids()         get_image_thumbtup()                ]
 #
-# This embedded terminal shows all of the IBEIS functions that start with the prefix
+# This embedded terminal shows all of the WBIA functions that start with the prefix
 # "ibs.get_image_p", for example "ibs.get_image_paths()".  If you are unsure about
 # the API specification for this function, you can ask help from Python directly
 # in the embedded session.
 #
 #     In  [5]: help(ibs.get_image_paths)
-#     Out [5]: Help on method get_image_paths in module ibeis.control.manual_image_funcs:
+#     Out [5]: Help on method get_image_paths in module wbia.control.manual_image_funcs:
 #
-#              get_image_paths(gid_list) method of ibeis.control.IBEISControl.IBEISController instance
+#              get_image_paths(gid_list) method of wbia.control.WBIAControl.WBIAController instance
 #                  Args:
-#                      ibs (IBEISController):  ibeis controller object
+#                      ibs (WBIAController):  wbia controller object
 #                      gid_list (list): a list of image absolute paths to img_dir
 #
 #                  Returns:
 #                      list: gpath_list
 #
 #                  CommandLine:
-#                      python -m ibeis.control.manual_image_funcs --test-get_image_paths
+#                      python -m wbia.control.manual_image_funcs --test-get_image_paths
 #
 #                  RESTful:
 #                      Method: GET
@@ -490,10 +490,10 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 #
 #                  Example:
 #                      >>> # ENABLE_DOCTEST
-#                      >>> from ibeis.control.manual_image_funcs import *  # NOQA
-#                      >>> import ibeis
+#                      >>> from wbia.control.manual_image_funcs import *  # NOQA
+#                      >>> import wbia
 #                      >>> # build test data
-#                      >>> ibs = ibeis.opendb('testdb1')
+#                      >>> ibs = wbia.opendb('testdb1')
 #                      >>> #gid_list = ibs.get_valid_gids()
 #                      >>> #gpath_list = get_image_paths(ibs, gid_list)
 #                      >>> new_gpath = ut.unixpath(ut.grab_test_imgpath('carl.jpg'))
@@ -509,21 +509,21 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 #
 #
 #                                 Good luck!
-#      Support for IBEIS and this plug-in example is maintained by Wild Me
+#      Support for WBIA and this plug-in example is maintained by Wild Me
 #             Wild Me is a non-profit located in Portland, OR, USA
 #
 #                       Please refer any questions to:
-#           dev@wildme.org or https://github.com/WildbookOrg/ibeis
+#           dev@wildme.org or https://github.com/WildbookOrg/wbia
 
 
 @register_ibs_method
 @register_api('/api/plugin/example/identification/helloworld/', methods=['GET'])
-def ibeis_plugin_identification_example_hello_world(ibs):
+def wbia_plugin_identification_example_hello_world(ibs):
     r"""
-    A "Hello world!" example for the IBEIS identification plug-in.
+    A "Hello world!" example for the WBIA identification plug-in.
 
     Args:
-        ibs (IBEISController):  ibeis controller object
+        ibs (WBIAController):  wbia controller object
         imgsetid (None):
         require_unixtime (bool):
         reviewed (None):
@@ -532,11 +532,11 @@ def ibeis_plugin_identification_example_hello_world(ibs):
         list: gid_list
 
     CommandLine:
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_hello_world
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_hello_world
 
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_hello_world:0
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_hello_world:0
 
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_hello_world:1
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_hello_world:1
 
     RESTful:
         Method: GET
@@ -545,12 +545,12 @@ def ibeis_plugin_identification_example_hello_world(ibs):
 
     Example0:
         >>> # ENABLE_DOCTEST
-        >>> import ibeis
+        >>> import wbia
         >>> import utool as ut
-        >>> from ibeis.init import sysres
+        >>> from wbia.init import sysres
         >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = ibeis.opendb(dbdir=dbdir)
-        >>> resp = ibs.ibeis_plugin_identification_example_hello_world()
+        >>> ibs = wbia.opendb(dbdir=dbdir)
+        >>> resp = ibs.wbia_plugin_identification_example_hello_world()
         >>>
         >>> # Result is a special variable in our doctests.  If the last line
         >>> # contains a "result" assignment, then the test checks if the lines
@@ -562,7 +562,7 @@ def ibeis_plugin_identification_example_hello_world(ibs):
         >>>     'annotations' : len(ibs.get_valid_aids()),
         >>>     'names'       : len(ibs.get_valid_nids()),
         >>> })
-        [ibeis_plugin_identification_example] hello world with IBEIS controller <IBEISController(testdb_identification) with UUID 1654bdc9-4a14-43f7-9a6a-5f10f2eaa279>
+        [wbia_plugin_identification_example] hello world with WBIA controller <WBIAController(testdb_identification) with UUID 1654bdc9-4a14-43f7-9a6a-5f10f2eaa279>
         {
             'annotations': 70,
             'database': UUID('1654bdc9-4a14-43f7-9a6a-5f10f2eaa279'),
@@ -573,39 +573,39 @@ def ibeis_plugin_identification_example_hello_world(ibs):
 
     Example1:
         >>> # DISABLE_DOCTEST
-        >>> import ibeis
+        >>> import wbia
         >>> import utool as ut
-        >>> from ibeis.init import sysres
+        >>> from wbia.init import sysres
         >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = ibeis.opendb(dbdir=dbdir)
+        >>> ibs = wbia.opendb(dbdir=dbdir)
         >>> ut.embed()
     """
     args = (ibs, )
-    resp = '[ibeis_plugin_identification_example] hello world with IBEIS controller %r' % args
+    resp = '[wbia_plugin_identification_example] hello world with WBIA controller %r' % args
     return resp
 
 
 @profile
 @register_ibs_method
-def ibeis_plugin_identification_example_file_download(file_url):
+def wbia_plugin_identification_example_file_download(file_url):
     r"""
     An example of how to download and cache a file on disk from a web-server.
     This function downloads the image to a local application folder and returns
     the local absolute path.
 
     CommandLine:
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_file_download
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_file_download
 
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_file_download:0
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_file_download:0
 
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_file_download:1
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_file_download:1
 
     Example0:
         >>> # ENABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
         >>> import utool as ut
         >>> file_url = 'https://wildbookiarepository.azureedge.net/data/lena.png'
-        >>> file_filepath = ibeis_plugin_identification_example_file_download(file_url)
+        >>> file_filepath = wbia_plugin_identification_example_file_download(file_url)
         >>> file_bytes = open(file_filepath, 'rb').read()
         >>> file_hash_content = ut.hash_data(file_bytes)
         >>> result = file_hash_content
@@ -613,13 +613,13 @@ def ibeis_plugin_identification_example_file_download(file_url):
 
     Example1:
         >>> # ENABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
         >>> import utool as ut
         >>> file_url = 'https://wildbookiarepository.azureedge.net/data/lena.png'
-        >>> file_filepath = ibeis_plugin_identification_example_file_download(file_url)
+        >>> file_filepath = wbia_plugin_identification_example_file_download(file_url)
         >>> # Force a deletion event on this file to force a re-download
         >>> ut.delete(file_filepath)
-        >>> file_filepath_ = ibeis_plugin_identification_example_file_download(file_url)
+        >>> file_filepath_ = wbia_plugin_identification_example_file_download(file_url)
         >>> assert file_filepath == file_filepath_
     """
     # Download the file to the local computer's application cache directory:
@@ -636,7 +636,7 @@ def ibeis_plugin_identification_example_file_download(file_url):
     # if the user asks for "https://domain.com/file.txt", then the hash check will
     # ask the server for the value of "https://domain.com/file.txt.md5".
     with ut.Timer() as timer:
-        file_filepath = ut.grab_file_url(file_url, appname='ibeis_plugin_identification_example', check_hash=True)
+        file_filepath = ut.grab_file_url(file_url, appname='wbia_plugin_identification_example', check_hash=True)
 
     # ut.Timer() is a handy context that allows for you to quickly get the run-time
     # of the code block under its indentation.
@@ -653,15 +653,15 @@ def ibeis_plugin_identification_example_file_download(file_url):
 class IdentificationExampleImageHashConfig(dt.Config):  # NOQA
     """
     CommandLine:
-        python -m ibeis_plugin_identification_example._plugin --test-IdentificationExampleImageHashConfig
+        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleImageHashConfig
 
-        python -m ibeis_plugin_identification_example._plugin --test-IdentificationExampleImageHashConfig:0
+        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleImageHashConfig:0
 
-        python -m ibeis_plugin_identification_example._plugin --test-IdentificationExampleImageHashConfig:1
+        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleImageHashConfig:1
 
     Example0:
         >>> # ENABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
         >>> config = IdentificationExampleImageHashConfig()
         >>> result = config.get_cfgstr()
         >>> print(result)
@@ -669,16 +669,16 @@ class IdentificationExampleImageHashConfig(dt.Config):  # NOQA
 
     Example1:
         >>> # ENABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
         >>> config = IdentificationExampleImageHashConfig(hash_algorithm='sha256', hash_rounds=100, hash_salt=b'test')
         >>> result = config.get_cfgstr()
         >>> print(result)
         IdentificationExampleImageHash(hash_algorithm=sha256,hash_rounds=100,hash_salt=b'test')
     """
     _param_info_list = [
-        ut.ParamInfo('hash_algorithm',  default='sha1',   valid_values=['sha1', 'sha256']),
-        ut.ParamInfo('hash_rounds',     default=int(1e6), type_=int),
-        ut.ParamInfo('hash_salt',       default=None,     hideif=None),
+        ut.ParamInfo('hash_algorithm', default='sha1', valid_values=['sha1', 'sha256']),
+        ut.ParamInfo('hash_rounds', default=int(1e6), type_=int),
+        ut.ParamInfo('hash_salt', default=None, hideif=None),
     ]
 
 
@@ -688,14 +688,14 @@ class IdentificationExampleImageHashConfig(dt.Config):  # NOQA
     configclass=IdentificationExampleImageHashConfig,
     fname='identification_example',
     chunksize=4)
-def ibeis_plugin_identification_example_image_hash(depc, gid_list, config):
+def wbia_plugin_identification_example_image_hash(depc, gid_list, config):
     r"""
     A toy example of creating a crypto-graphically secure (salted) hash of an on-disk image.
 
     The SQLite3 database location for this dependency cache table is located in
-    the loaded IBEIS database folder.  A new table is made automatically named
+    the loaded WBIA database folder.  A new table is made automatically named
     "IdentificationExampleImageHash" in the file
-    "_ibsdb/_ibeis_cacahe/identification_example.sqlite", as defined by the
+    "_ibsdb/_wbia_cacahe/identification_example.sqlite", as defined by the
     "tablename" and fname" parameters in the above decorator's configuration.
 
     The colnames and coltypes parameters specify the desired columns that are to be
@@ -727,16 +727,16 @@ def ibeis_plugin_identification_example_image_hash(depc, gid_list, config):
         https://docs.python.org/2/library/hashlib.html#key-derivation
 
     CommandLine:
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_image_hash
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_image_hash
 
     Example:
         >>> # ENABLE_DOCTEST
-        >>> import ibeis
+        >>> import wbia
         >>> import utool as ut
         >>> import numpy as np
-        >>> from ibeis.init import sysres
+        >>> from wbia.init import sysres
         >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = ibeis.opendb(dbdir=dbdir)
+        >>> ibs = wbia.opendb(dbdir=dbdir)
         >>>
         >>> gid_list = ibs.get_valid_gids()
         >>> gid_list = gid_list[:10]
@@ -771,7 +771,7 @@ def ibeis_plugin_identification_example_image_hash(depc, gid_list, config):
     import hashlib
     import binascii
 
-    # Get the IBEIS controller for this database, useful for getting access to other
+    # Get the WBIA controller for this database, useful for getting access to other
     # controller functions made for this plug-in but also the built-in adders, getters,
     # setters, and deleters on controller.
     ibs = depc.controller
@@ -779,8 +779,8 @@ def ibeis_plugin_identification_example_image_hash(depc, gid_list, config):
     # Parameter validation should be done with the Config class for this
     # function, no need to check here.  Simply unpack and rename as needed
     algorithm = config['hash_algorithm']
-    rounds    = config['hash_rounds']
-    salt      = config['hash_salt']
+    rounds = config['hash_rounds']
+    salt = config['hash_salt']
     rounds = int(rounds)
 
     # Load the images and compute the PBKDF2 (Password-Based Key Derivation Function 2)
@@ -802,11 +802,11 @@ def ibeis_plugin_identification_example_image_hash(depc, gid_list, config):
 class IdentificationExampleImageHashSumConfig(dt.Config):  # NOQA
     """
     CommandLine:
-        python -m ibeis_plugin_identification_example._plugin --test-IdentificationExampleImageHashSumConfig
+        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleImageHashSumConfig
 
     Example0:
         >>> # ENABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
         >>> config = IdentificationExampleImageHashSumConfig()
         >>> result = config.get_cfgstr()
         >>> print(result)
@@ -823,7 +823,7 @@ class IdentificationExampleImageHashSumConfig(dt.Config):  # NOQA
     configclass=IdentificationExampleImageHashSumConfig,
     fname='identification_example',
     chunksize=100)
-def ibeis_plugin_identification_example_image_hash_sum(depc, image_hash_rowid_list, config):
+def wbia_plugin_identification_example_image_hash_sum(depc, image_hash_rowid_list, config):
     r"""
     A toy example of creating a sum for a crypto-graphically secure (salted) hash,
     which is computed by a previous depc node.  The sum of a hash is computed as
@@ -835,16 +835,16 @@ def ibeis_plugin_identification_example_image_hash_sum(depc, image_hash_rowid_li
     loading image assets (which can be quite memory intensive) into memory.
 
     CommandLine:
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_image_hash_sum
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_image_hash_sum
 
     Example:
         >>> # ENABLE_DOCTEST
-        >>> import ibeis
+        >>> import wbia
         >>> import utool as ut
         >>> import numpy as np
-        >>> from ibeis.init import sysres
+        >>> from wbia.init import sysres
         >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = ibeis.opendb(dbdir=dbdir)
+        >>> ibs = wbia.opendb(dbdir=dbdir)
         >>>
         >>> gid_list = ibs.get_valid_gids()
         >>> gid_list = gid_list[:10]
@@ -875,7 +875,7 @@ def ibeis_plugin_identification_example_image_hash_sum(depc, image_hash_rowid_li
     # Get the configuration
     modulus = config['hash_sum_mod']
 
-    # Instead of loading results from the IBEIS controller using the Image RowIDs,
+    # Instead of loading results from the WBIA controller using the Image RowIDs,
     # we are instead passed the rowids for the parent of this depc node, which is
     # the 'IdentificationExampleImageHash' depc node we made above.  Therefore,
     # while we always pass a gid_list into depc.get() we will always receive the
@@ -902,11 +902,11 @@ def ibeis_plugin_identification_example_image_hash_sum(depc, image_hash_rowid_li
 class IdentificationExampleImageHashProdConfig(dt.Config):  # NOQA
     """
     CommandLine:
-        python -m ibeis_plugin_identification_example._plugin --test-IdentificationExampleImageHashProdConfig
+        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleImageHashProdConfig
 
     Example0:
         >>> # ENABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
         >>> config = IdentificationExampleImageHashProdConfig()
         >>> result = config.get_cfgstr()
         >>> print(result)
@@ -923,7 +923,7 @@ class IdentificationExampleImageHashProdConfig(dt.Config):  # NOQA
     configclass=IdentificationExampleImageHashProdConfig,
     fname='identification_example',
     chunksize=100)
-def ibeis_plugin_identification_example_image_hash_prod(depc, image_hash_rowid_list, config):
+def wbia_plugin_identification_example_image_hash_prod(depc, image_hash_rowid_list, config):
     r"""
     A toy example of creating a product for a crypto-graphically secure (salted) hash,
     which is computed by a previous depc node.  It's algorithmic solution is unchanged
@@ -935,16 +935,16 @@ def ibeis_plugin_identification_example_image_hash_prod(depc, image_hash_rowid_l
     of a common parent in depc.
 
     CommandLine:
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_image_hash_prod
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_image_hash_prod
 
     Example:
         >>> # ENABLE_DOCTEST
-        >>> import ibeis
+        >>> import wbia
         >>> import utool as ut
         >>> import numpy as np
-        >>> from ibeis.init import sysres
+        >>> from wbia.init import sysres
         >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = ibeis.opendb(dbdir=dbdir)
+        >>> ibs = wbia.opendb(dbdir=dbdir)
         >>>
         >>> gid_list = ibs.get_valid_gids()
         >>> gid_list = gid_list[:10]
@@ -989,22 +989,22 @@ def ibeis_plugin_identification_example_image_hash_prod(depc, image_hash_rowid_l
 
 class IdentificationExampleOracleRequest(dt.base.VsOneSimilarityRequest):  # NOQA
     """
-    This class is the main vehicle for interacting with the IBEIS identification
+    This class is the main vehicle for interacting with the WBIA identification
     pipeline.  It is amazing, mysterious and complex, so let's ignore it.
 
     ...for now.
 
     CommandLine:
-        python -m ibeis_plugin_identification_example._plugin --test-IdentificationExampleOracleRequest
+        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleOracleRequest
 
     Example:
         >>> # ENABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
-        >>> import ibeis
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> import wbia
         >>> import itertools as it
-        >>> from ibeis.init import sysres
+        >>> from wbia.init import sysres
         >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = ibeis.opendb(dbdir=dbdir)
+        >>> ibs = wbia.opendb(dbdir=dbdir)
         >>>
         >>> aid_list = ibs.get_valid_aids()
         >>> aid_list = aid_list[:10]
@@ -1054,12 +1054,12 @@ class IdentificationExampleOracleRequest(dt.base.VsOneSimilarityRequest):  # NOQ
 
     def _get_match_results(request, depc, qaid_list, daid_list, score_list, config):
         r""" converts table results into format for ipython notebook """
-        #qaid_list, daid_list = request.get_parent_rowids()
-        #score_list = request.score_list
-        #config = request.config
+        # qaid_list, daid_list = request.get_parent_rowids()
+        # score_list = request.score_list
+        # config = request.config
 
         unique_qaids, groupxs = ut.group_indices(qaid_list)
-        #grouped_qaids_list = ut.apply_grouping(qaid_list, groupxs)
+        # grouped_qaids_list = ut.apply_grouping(qaid_list, groupxs)
         grouped_daids = ut.apply_grouping(daid_list, groupxs)
         grouped_scores = ut.apply_grouping(score_list, groupxs)
 
@@ -1082,7 +1082,7 @@ class IdentificationExampleOracleRequest(dt.base.VsOneSimilarityRequest):  # NOQ
             annot_scores = annot_scores.compress(is_valid)
 
             # Hacked in version of creating an annot match object
-            match_result = ibeis.AnnotMatch()
+            match_result = wbia.AnnotMatch()
             match_result.qaid = qaid
             match_result.qnid = qnid
             match_result.daid_list = daid_list_
@@ -1129,11 +1129,11 @@ class IdentificationExampleOracleRequest(dt.base.VsOneSimilarityRequest):  # NOQ
 class IdentificationExampleOracleConfig(dt.Config):  # NOQA
     """
     CommandLine:
-        python -m ibeis_plugin_identification_example._plugin --test-IdentificationExampleOracleConfig
+        python -m wbia_plugin_identification_example._plugin --test-IdentificationExampleOracleConfig
 
     Example:
         >>> # ENABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
         >>> config = IdentificationExampleOracleConfig()
         >>> result = config.get_cfgstr()
         >>> print(result)
@@ -1152,7 +1152,7 @@ class IdentificationExampleOracleConfig(dt.Config):  # NOQA
     requestclass=IdentificationExampleOracleRequest,
     fname='identification_example',
     chunksize=None)
-def ibeis_plugin_identification_example_oracle(depc, qaid_list, daid_list, config):
+def wbia_plugin_identification_example_oracle(depc, qaid_list, daid_list, config):
     r"""
     This function is called automatically by the IdentificationExampleOracleRequest
     whenever the appropriate ID algorithm 'IdentificationExampleOracle' is specified
@@ -1192,24 +1192,24 @@ def ibeis_plugin_identification_example_oracle(depc, qaid_list, daid_list, confi
         - Calls Python function query_chips_graph (Endpoint for /api/query/graph/)
 
     CommandLine:
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_oracle:0
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_oracle:0
 
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_oracle:0 --show
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_oracle:0 --show
 
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_oracle:1
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_oracle:1
 
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_oracle:2
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_oracle:2
 
-        python -m ibeis_plugin_identification_example._plugin --test-ibeis_plugin_identification_example_oracle:3
+        python -m wbia_plugin_identification_example._plugin --test-wbia_plugin_identification_example_oracle:3
 
     Example0:
         >>> # ENABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
-        >>> import ibeis
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> import wbia
         >>> import itertools as it
-        >>> from ibeis.init import sysres
+        >>> from wbia.init import sysres
         >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = ibeis.opendb(dbdir=dbdir)
+        >>> ibs = wbia.opendb(dbdir=dbdir)
         >>>
         >>> depc = ibs.depc_annot
         >>> imageset_rowid_list = ibs.get_imageset_imgsetids_from_text(['Grevy\'s Zebra Query', 'Grevy\'s Zebra Database'])
@@ -1228,12 +1228,12 @@ def ibeis_plugin_identification_example_oracle(depc, qaid_list, daid_list, confi
 
     Example1:
         >>> # ENABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
-        >>> import ibeis
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> import wbia
         >>> import itertools as it
-        >>> from ibeis.init import sysres
+        >>> from wbia.init import sysres
         >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = ibeis.opendb(dbdir=dbdir)
+        >>> ibs = wbia.opendb(dbdir=dbdir)
         >>>
         >>> depc = ibs.depc_annot
         >>> imageset_rowid_list = ibs.get_imageset_imgsetids_from_text(['Grevy\'s Zebra Query', 'Grevy\'s Zebra Database'])
@@ -1246,12 +1246,12 @@ def ibeis_plugin_identification_example_oracle(depc, qaid_list, daid_list, confi
 
     Example2:
         >>> # DISABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
-        >>> import ibeis
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> import wbia
         >>> import itertools as it
-        >>> from ibeis.init import sysres
+        >>> from wbia.init import sysres
         >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = ibeis.opendb(dbdir=dbdir)
+        >>> ibs = wbia.opendb(dbdir=dbdir)
         >>>
         >>> depc = ibs.depc_annot
         >>> imageset_rowid_list = ibs.get_imageset_imgsetids_from_text(['Grevy\'s Zebra Query', 'Grevy\'s Zebra Database'])
@@ -1263,12 +1263,12 @@ def ibeis_plugin_identification_example_oracle(depc, qaid_list, daid_list, confi
 
     Example3:
         >>> # DISABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
-        >>> import ibeis
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> import wbia
         >>> import itertools as it
-        >>> from ibeis.init import sysres
+        >>> from wbia.init import sysres
         >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = ibeis.opendb(dbdir=dbdir)
+        >>> ibs = wbia.opendb(dbdir=dbdir)
         >>>
         >>> depc = ibs.depc_annot
         >>> imageset_rowid_list = ibs.get_imageset_imgsetids_from_text(['Fluke Query', 'Fluke Database'])
@@ -1287,12 +1287,12 @@ def ibeis_plugin_identification_example_oracle(depc, qaid_list, daid_list, confi
 
     Example4:
         >>> # DISABLE_DOCTEST
-        >>> from ibeis_plugin_identification_example._plugin import *  # NOQA
-        >>> import ibeis
+        >>> from wbia_plugin_identification_example._plugin import *  # NOQA
+        >>> import wbia
         >>> import itertools as it
-        >>> from ibeis.init import sysres
+        >>> from wbia.init import sysres
         >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = ibeis.opendb(dbdir=dbdir)
+        >>> ibs = wbia.opendb(dbdir=dbdir)
         >>>
         >>> depc = ibs.depc_annot
         >>> imageset_rowid_list = ibs.get_imageset_imgsetids_from_text(['Dorsal Query', 'Dorsal Database'])
@@ -1309,7 +1309,7 @@ def ibeis_plugin_identification_example_oracle(depc, qaid_list, daid_list, confi
     error = config['oracle_fallibility']
 
     # Retrieve the name for the query and database annotations.
-    # This is a great example of making a global cached call to the IBEIS controller
+    # This is a great example of making a global cached call to the WBIA controller
     # that will be re-used multiple times in memory.  It would be a major slowdown
     # to call the get_annot_nids call for every single pair as they are encountered
     # below in the for loop.  Do this in a single batch instead and on the unique
@@ -1349,7 +1349,7 @@ def ibeis_plugin_identification_example_oracle(depc, qaid_list, daid_list, confi
 if __name__ == '__main__':
     r"""
     CommandLine:
-        python -m ibeis_plugin_identification_example._plugin --allexamples
+        python -m wbia_plugin_identification_example._plugin --allexamples
     """
     import multiprocessing
     multiprocessing.freeze_support()  # for win32
