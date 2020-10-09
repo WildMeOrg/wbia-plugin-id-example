@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from wbia_id.version import version as __version__  # NOQA
 from wbia_id import _plugin  # NOQA
 
