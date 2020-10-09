@@ -57,3 +57,5 @@ nosetests.xml
 # setuptools_scm version discovery writes the version to <pkg>/_version.py
 **/_version.py
 .coverage*
+
+_docs/_build/
