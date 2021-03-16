@@ -1132,7 +1132,7 @@ class IdentificationExampleOracleRequest(dt.base.VsOneSimilarityRequest):  # NOQ
             match_result.set_cannonical_name_score(annot_scores, name_scores)
             yield match_result
 
-    def postprocess_execute(request, parent_rowids, result_list):
+    def postprocess_execute(request, table, parent_rowids, rowids, result_list):
         # Run on the results returned by the depc node function
         # Get the input rowids
         qaid_list, daid_list = list(zip(*parent_rowids))
@@ -1144,11 +1144,13 @@ class IdentificationExampleOracleRequest(dt.base.VsOneSimilarityRequest):  # NOQ
         )
         # Resolve the iterator here, computing the ChipMatch list on demand
         cm_list = list(cm_iter)
+        # Clean-up the rowids that were stored, unless we need them later for caching
+        table.delete_rows(rowids)
         return cm_list
 
     def execute(request, *args, **kwargs):
         # Run before calling the depc node function, used to setup the matching process
-        kwargs['use_cache'] = False
+        # kwargs['use_cache'] = False
 
         # Compute the ID matching results using this algorithm
         result_list = super(IdentificationExampleOracleRequest, request).execute(
